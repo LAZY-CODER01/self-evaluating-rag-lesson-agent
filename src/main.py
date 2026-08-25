@@ -1,4 +1,5 @@
 from src.config import DEFAULT_LEARNER_PROFILE, MAX_RETRIES
+from src.memory import load_memory
 from src.workflow import build_workflow
 
 
@@ -14,7 +15,7 @@ def main():
         "max_retries": MAX_RETRIES,
         "previous_feedback": "",
         "rejection_logs": [],
-        "memory": [],
+        "memory": load_memory(),
     }
 
     final_state = workflow.invoke(initial_state)

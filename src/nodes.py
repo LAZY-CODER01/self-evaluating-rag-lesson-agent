@@ -1,7 +1,8 @@
 from src.config import MAX_RETRIES
 from src.generator import generate_lesson
 from src.evaluator import evaluate_lesson
-from src.schemas import RejectionLog
+from src.memory import update_memory
+from src.schemas import RejectionLog, EvaluationResult
 from src.state import AgentState
 
 
@@ -52,30 +53,50 @@ def route_after_evaluation(state: AgentState) -> str:
 
 
 def retry_node(state: AgentState) -> AgentState:
-    """Prepare the state for a retry."""
-    evaluation = state.get("evaluation")
-    if not evaluation:
-        raise ValueError("Evaluation is missing in state.")
-        
+    """Prepare evaluator feedback and update persistent memory."""
+
+    evaluation = state["evaluation"]
+
+    rejection_log = create_rejection_log(state)
+
+    rejection_logs = [
+        *state.get("rejection_logs", []),
+        rejection_log,
+    ]
+
+    current_memory = state.get("memory", [])
+
+    updated_memory = update_memory(
+        memory=current_memory,
+        rejection_log=rejection_log,
+    )
+
+    return {
+        **state,
+        "previous_feedback": build_feedback(evaluation),
+        "rejection_logs": rejection_logs,
+        "memory": updated_memory,
+    }
+
+
+def build_feedback(evaluation: EvaluationResult) -> str:
     failures = [
         f"{check.name}: {check.reason}"
         for check in evaluation.checks
         if check.status == "FAIL"
     ]
-    
-    rejection_log = RejectionLog(
+    return "The previous lesson was rejected due to the following failures:\n" + "\n".join(f"- {f}" for f in failures)
+
+
+def create_rejection_log(state: AgentState) -> RejectionLog:
+    evaluation = state["evaluation"]
+    failures = [
+        f"{check.name}: {check.reason}"
+        for check in evaluation.checks
+        if check.status == "FAIL"
+    ]
+    return RejectionLog(
         attempt=state.get("attempt", 1),
         status="REJECTED",
         failures=failures,
     )
-    
-    previous_feedback = "The previous lesson was rejected due to the following failures:\n" + "\n".join(f"- {f}" for f in failures)
-    
-    rejection_logs = state.get("rejection_logs", [])
-    rejection_logs.append(rejection_log)
-    
-    return {
-        **state,
-        "rejection_logs": rejection_logs,
-        "previous_feedback": previous_feedback,
-    }
