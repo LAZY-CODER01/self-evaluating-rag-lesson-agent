@@ -25,6 +25,10 @@ def save_lesson(state: AgentState) -> None:
 
     lesson = state["lesson"]
 
+    # Section titles the LLM sometimes adds inside `sections` that are
+    # already rendered explicitly below. Skip them to avoid duplication.
+    _SKIP_TITLES = {"key takeaways", "examples", "example"}
+
     content = [
         f"# {lesson.title}",
         "",
@@ -33,6 +37,8 @@ def save_lesson(state: AgentState) -> None:
     ]
 
     for section in lesson.sections:
+        if section.title.lower().strip() in _SKIP_TITLES:
+            continue
         content.extend(
             [
                 f"## {section.title}",
@@ -42,19 +48,27 @@ def save_lesson(state: AgentState) -> None:
             ]
         )
 
-    content.extend(
-        [
-            "## Example",
-            "",
-            lesson.examples[0],
-            "",
-            "## Key Takeaways",
-            "",
-        ]
-    )
+    if lesson.examples:
+        content.extend(
+            [
+                "## Examples",
+                "",
+            ]
+        )
+        for example in lesson.examples:
+            content.append(f"- {example}")
+        content.append("")
 
-    for takeaway in lesson.key_takeaways:
-        content.append(f"- {takeaway}")
+    if lesson.key_takeaways:
+        content.extend(
+            [
+                "## Key Takeaways",
+                "",
+            ]
+        )
+        for takeaway in lesson.key_takeaways:
+            content.append(f"- {takeaway}")
+        content.append("")
 
     lesson_path = OUTPUT_DIR / "lesson.md"
 
@@ -176,7 +190,11 @@ def save_run_report(state: AgentState) -> None:
         ]
     )
 
+    _SKIP_TITLES = {"key takeaways", "examples", "example"}
+
     for section in lesson.sections:
+        if section.title.lower().strip() in _SKIP_TITLES:
+            continue
         lines.extend(
             [
                 f"#### {section.title}",
