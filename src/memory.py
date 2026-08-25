@@ -44,6 +44,8 @@ def save_memory(memory: list[MemoryEntry]) -> None:
             ensure_ascii=False,
         )
 
+
+
 def normalize_failure_type(failure_type: str) -> str:
     """Normalize evaluator check names into stable categories."""
 
@@ -53,6 +55,8 @@ def normalize_failure_type(failure_type: str) -> str:
         normalized = normalized.split("(", 1)[0].strip()
 
     return normalized
+
+
 def update_memory(
     memory: list[MemoryEntry],
     rejection_log: RejectionLog,

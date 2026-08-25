@@ -5,6 +5,8 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 data/*.db
+data/memory.json
 outputs/lesson.md
 outputs/evaluation_report.json
 outputs/run_report.md
+*.save

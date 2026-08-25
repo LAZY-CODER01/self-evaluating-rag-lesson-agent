@@ -7,7 +7,7 @@ def test_accuracy_memory_rule():
         reason="The lesson contained an incorrect technical claim.",
     )
 
-    assert "technical accuracy" in rule
+    assert "technical claims" in rule
 
 
 def test_jargon_memory_rule():
