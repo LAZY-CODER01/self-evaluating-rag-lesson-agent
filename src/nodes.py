@@ -88,15 +88,41 @@ def build_feedback(evaluation: EvaluationResult) -> str:
     return "The previous lesson was rejected due to the following failures:\n" + "\n".join(f"- {f}" for f in failures)
 
 
-def create_rejection_log(state: AgentState) -> RejectionLog:
+def create_rejection_log(
+    state: AgentState,
+) -> RejectionLog:
+    """Create a structured record for a rejected attempt."""
+
     evaluation = state["evaluation"]
-    failures = [
-        f"{check.name}: {check.reason}"
+
+    failed_checks = [
+        check
         for check in evaluation.checks
         if check.status == "FAIL"
     ]
+
+    failures = [
+        f"{check.name}: {check.reason}"
+        for check in failed_checks
+    ]
+
+    reasons = [
+        check.reason
+        for check in failed_checks
+    ]
+
+    corrections = [
+        (
+            f"Fix {check.name} based on evaluator feedback: "
+            f"{check.reason}"
+        )
+        for check in failed_checks
+    ]
+
     return RejectionLog(
-        attempt=state.get("attempt", 1),
+        attempt=state["attempt"],
         status="REJECTED",
         failures=failures,
+        reasons=reasons,
+        corrections=corrections,
     )

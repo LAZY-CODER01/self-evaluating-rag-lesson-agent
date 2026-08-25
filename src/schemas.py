@@ -30,10 +30,18 @@ class EvaluationResult(BaseModel):
 class RejectionLog(BaseModel):
     attempt: int
     status: Literal["REJECTED", "PASSED"]
-    failures: List[str] = Field(default_factory=list)
-    corrections: List[str] = Field(default_factory=list)
 
+    failures: List[str] = Field(
+        default_factory=list
+    )
 
+    reasons: List[str] = Field(
+        default_factory=list
+    )
+
+    corrections: List[str] = Field(
+        default_factory=list
+    )
 class MemoryEntry(BaseModel):
     failure_type: str
     reason: str

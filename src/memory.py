@@ -13,8 +13,11 @@ def load_memory() -> list[MemoryEntry]:
     if not MEMORY_FILE.exists():
         return []
 
-    with MEMORY_FILE.open("r", encoding="utf-8") as file:
-        data = json.load(file)
+    try:
+        with MEMORY_FILE.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+    except json.JSONDecodeError:
+        return []
 
     return [
         MemoryEntry(**entry)
@@ -91,38 +94,88 @@ def update_memory(
     save_memory(updated_memory)
 
     return updated_memory
-
-
 def build_learned_rule(
     failure_type: str,
     reason: str,
 ) -> str:
     """Convert evaluator feedback into a reusable rule."""
 
-    if failure_type == "accuracy":
+    normalized = failure_type.lower().strip()
+
+    if normalized in {
+        "accuracy",
+        "technical accuracy",
+    }:
         return (
-            "Prioritize technical accuracy and never make "
-            "unsupported claims."
+            "Verify technical claims carefully. "
+            "Never describe RAG as retraining the model "
+            "during a user query."
         )
 
-    if failure_type == "jargon":
+    if normalized in {
+        "jargon",
+        "jargon handling",
+    }:
         return (
             "Explain technical terms in simple language "
             "before using them."
         )
 
-    if failure_type == "beginner_friendly":
+    if normalized in {
+        "beginner_friendly",
+        "beginner friendly",
+    }:
         return (
             "Use short sentences and explain concepts "
             "from the learner's starting level."
         )
 
-    if failure_type == "example":
+    if normalized in {
+        "example",
+        "concrete example",
+    }:
         return (
             "Include a concrete example that directly "
             "shows how the concept works."
         )
 
+    if normalized in {
+        "rag_fundamentals",
+        "rag fundamentals",
+    }:
+        return (
+            "Clearly explain retrieval, augmentation, "
+            "and generation as the core RAG pipeline."
+        )
+
+    if normalized in {
+        "why_rag",
+        "why rag",
+    }:
+        return (
+            "Explain why RAG is useful, especially for "
+            "providing external or updated information."
+        )
+
+    if normalized in {
+        "coherence",
+        "teaching flow",
+    }:
+        return (
+            "Keep the lesson organized in a logical "
+            "teaching sequence without conceptual jumps."
+        )
+
+    if normalized in {
+        "standalone",
+        "standalone completeness",
+    }:
+        return (
+            "Make the lesson self-contained and define "
+            "all required concepts within the lesson."
+        )
+
     return (
-        f"Avoid repeating this issue: {reason}"
+        "Review the evaluator feedback carefully and "
+        "avoid repeating the identified issue."
     )

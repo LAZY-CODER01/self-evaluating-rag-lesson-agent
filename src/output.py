@@ -157,10 +157,50 @@ def save_run_report(state: AgentState) -> None:
                 ]
             )
 
-            for failure in log.failures:
-                lines.append(
-                    f"- {failure}"
+            for log in rejection_logs:
+                lines.extend(
+                    [
+                        f"### Attempt {log.attempt}",
+                        "",
+                        f"**Status:** {log.status}",
+                        "",
+                        "#### What Failed",
+                        "",
+                    ]
                 )
+
+                for failure in log.failures:
+                    lines.append(
+                        f"- {failure}"
+                    )
+
+                lines.extend(
+                    [
+                        "",
+                        "#### Why It Failed",
+                        "",
+                    ]
+                )
+
+                for reason in log.reasons:
+                    lines.append(
+                        f"- {reason}"
+                    )
+
+                lines.extend(
+                    [
+                        "",
+                        "#### Correction Applied",
+                        "",
+                    ]
+                )
+
+                for correction in log.corrections:
+                    lines.append(
+                        f"- {correction}"
+                    )
+
+                lines.append("")
 
             lines.extend(
                 [

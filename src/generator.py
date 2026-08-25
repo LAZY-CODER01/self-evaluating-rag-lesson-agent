@@ -1,11 +1,25 @@
 from typing import List
 
+from src.config import DEMO_MODE
 from src.llm import get_llm
 from src.prompts import (
     GENERATOR_SYSTEM_PROMPT,
     build_generator_prompt,
 )
 from src.schemas import Lesson, MemoryEntry
+
+
+def inject_demo_error(lesson: Lesson) -> Lesson:
+    """Inject a deliberate factual error for evaluator demonstration."""
+
+    lesson.introduction = (
+        lesson.introduction
+        + "\n\n"
+        + "Incorrect demo claim: RAG retrains the AI model "
+          "every time a user asks a question."
+    )
+
+    return lesson
 
 
 def format_memory(memory: List[MemoryEntry]) -> str:
@@ -55,4 +69,11 @@ def generate_lesson(
         ]
     )
 
-    return response
+    lesson = response
+
+    # Demo-only behavior.
+    # Normal runs keep DEMO_MODE=False.
+    if DEMO_MODE:
+        lesson = inject_demo_error(lesson)
+
+    return lesson
