@@ -1,4 +1,5 @@
 from typing import List, Literal, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -48,6 +49,11 @@ class WorkflowState(BaseModel):
     evaluation: Optional[EvaluationResult] = None
 
     attempt: int = 0
-    rejection_logs: List[RejectionLog] = Field(default_factory=list)
 
-    memory: List[MemoryEntry] = Field(default_factory=list)
+    rejection_logs: List[RejectionLog] = Field(
+        default_factory=list
+    )
+
+    memory: List[MemoryEntry] = Field(
+        default_factory=list
+    )
