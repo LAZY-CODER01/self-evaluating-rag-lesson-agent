@@ -14,3 +14,7 @@ OLLAMA_BASE_URL = os.getenv(
 MODEL_NAME = os.getenv("MODEL_NAME", "qwen3:14b")
 
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "2"))
+DEFAULT_LEARNER_PROFILE = (
+    "A 12th-grade graduate from India with limited English "
+    "vocabulary and no prior knowledge of AI or machine learning."
+)
