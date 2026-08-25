@@ -9,17 +9,20 @@ from src.state import AgentState
 def generate_node(state: AgentState) -> AgentState:
     """Generate or regenerate the lesson."""
 
+    attempt = state.get("attempt", 0) + 1
+
     lesson = generate_lesson(
         topic=state["topic"],
         learner_profile=state["learner_profile"],
         memory=state.get("memory", []),
         previous_feedback=state.get("previous_feedback", ""),
+        attempt=attempt,
     )
 
     return {
         **state,
         "lesson": lesson,
-        "attempt": state.get("attempt", 0) + 1,
+        "attempt": attempt,
         "max_retries": state.get("max_retries", MAX_RETRIES),
     }
 

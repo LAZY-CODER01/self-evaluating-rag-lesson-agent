@@ -44,9 +44,14 @@ def generate_lesson(
     learner_profile: str,
     memory: List[MemoryEntry] | None = None,
     previous_feedback: str = "",
+    attempt: int = 1,
 ) -> Lesson:
     """
     Generate a structured beginner lesson using the configured LLM.
+
+    The `attempt` parameter is used to gate demo error injection:
+    the deliberate false claim is only injected on the first attempt
+    so the final regenerated lesson is always clean.
     """
 
     memory = memory or []
@@ -71,9 +76,11 @@ def generate_lesson(
 
     lesson = response
 
-    # Demo-only behavior.
-    # Normal runs keep DEMO_MODE=False.
-    if DEMO_MODE:
+    # Demo-only behavior: inject a deliberate factual error on the
+    # first attempt only so the evaluator rejects it and the retry
+    # produces a clean lesson that passes.
+    # Normal runs keep DEMO_MODE=False in src/config.py.
+    if DEMO_MODE and attempt == 1:
         lesson = inject_demo_error(lesson)
 
     return lesson

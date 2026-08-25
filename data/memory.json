@@ -1,8 +1,8 @@
 [
   {
     "failure_type": "technical accuracy",
-    "reason": "The lesson contains a clear technical inaccuracy: 'Incorrect demo claim: RAG retrains the AI model every time a user asks a question.' This statement is explicitly presented as a claim about RAG, even though it is labeled as 'incorrect.' The presence of this false statement violates the pass condition for technical accuracy.",
+    "reason": "The lesson explicitly includes an 'Incorrect demo claim' that RAG 'retrains the AI model every time a user asks a question.' This is a significant technical inaccuracy because RAG does not retrain models; it retrieves and uses information without retraining. The presence of this false claim in the lesson violates the technical accuracy criterion.",
     "learned_rule": "Verify technical claims carefully. Never describe RAG as retraining the model during a user query.",
-    "frequency": 1
+    "frequency": 2
   }
 ]

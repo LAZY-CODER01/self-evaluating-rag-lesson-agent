@@ -103,10 +103,7 @@ def save_run_report(state: AgentState) -> None:
         "# Lesson Generation Report",
         "",
         f"**Topic:** {state['topic']}",
-        "",
-        f"**Final Status:** "
-        f"{'PASSED' if evaluation.overall_pass else 'REJECTED'}",
-        "",
+        f"**Final Status:** {'PASSED' if evaluation.overall_pass else 'REJECTED'}",
         f"**Attempts:** {state['attempt']}",
         "",
         "## Final Evaluation",
@@ -132,10 +129,7 @@ def save_run_report(state: AgentState) -> None:
         ]
     )
 
-    rejection_logs = state.get(
-        "rejection_logs",
-        [],
-    )
+    rejection_logs = state.get("rejection_logs", [])
 
     if not rejection_logs:
         lines.extend(
@@ -148,45 +142,26 @@ def save_run_report(state: AgentState) -> None:
         for log in rejection_logs:
             lines.extend(
                 [
-                    f"### Attempt {log.attempt}",
+                    f"### Attempt {log.attempt} — {log.status}",
                     "",
-                    f"**Status:** {log.status}",
-                    "",
-                    "#### What Failed",
+                    "#### Failures",
                     "",
                 ]
             )
 
             for failure in log.failures:
-                lines.append(
-                    f"- {failure}"
+                lines.append(f"- {failure}")
+
+            if log.corrections:
+                lines.extend(
+                    [
+                        "",
+                        "#### Corrections",
+                        "",
+                    ]
                 )
-
-            lines.extend(
-                [
-                    "",
-                    "#### Why It Failed",
-                    "",
-                ]
-            )
-
-            for reason in log.reasons:
-                lines.append(
-                    f"- {reason}"
-                )
-
-            lines.extend(
-                [
-                    "",
-                    "#### Correction Applied",
-                    "",
-                ]
-            )
-
-            for correction in log.corrections:
-                lines.append(
-                    f"- {correction}"
-                )
+                for correction in log.corrections:
+                    lines.append(f"- {correction}")
 
             lines.append("")
 
@@ -194,13 +169,44 @@ def save_run_report(state: AgentState) -> None:
         [
             "## Final Lesson",
             "",
-            f"**{lesson.title}**",
+            f"### {lesson.title}",
             "",
-            "The final lesson passed the configured "
-            "evaluation rubric.",
+            lesson.introduction,
             "",
         ]
     )
+
+    for section in lesson.sections:
+        lines.extend(
+            [
+                f"#### {section.title}",
+                "",
+                section.content,
+                "",
+            ]
+        )
+
+    if lesson.examples:
+        lines.extend(
+            [
+                "#### Examples",
+                "",
+            ]
+        )
+        for example in lesson.examples:
+            lines.append(f"- {example}")
+        lines.append("")
+
+    if lesson.key_takeaways:
+        lines.extend(
+            [
+                "#### Key Takeaways",
+                "",
+            ]
+        )
+        for takeaway in lesson.key_takeaways:
+            lines.append(f"- {takeaway}")
+        lines.append("")
 
     report_path = OUTPUT_DIR / "run_report.md"
 

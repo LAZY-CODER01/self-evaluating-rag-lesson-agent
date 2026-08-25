@@ -18,4 +18,4 @@ DEFAULT_LEARNER_PROFILE = (
     "A 12th-grade graduate from India with limited English "
     "vocabulary and no prior knowledge of AI or machine learning."
 )
-DEMO_MODE = False
+DEMO_MODE = True
