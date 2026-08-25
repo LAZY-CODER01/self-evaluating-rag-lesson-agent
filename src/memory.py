@@ -13,11 +13,8 @@ def load_memory() -> list[MemoryEntry]:
     if not MEMORY_FILE.exists():
         return []
 
-    try:
-        with MEMORY_FILE.open("r", encoding="utf-8") as file:
-            data = json.load(file)
-    except json.JSONDecodeError:
-        return []
+    with MEMORY_FILE.open("r", encoding="utf-8") as file:
+        data = json.load(file)
 
     return [
         MemoryEntry(**entry)
@@ -47,13 +44,22 @@ def save_memory(memory: list[MemoryEntry]) -> None:
             ensure_ascii=False,
         )
 
+def normalize_failure_type(failure_type: str) -> str:
+    """Normalize evaluator check names into stable categories."""
 
+    normalized = failure_type.lower().strip()
+
+    if "(" in normalized:
+        normalized = normalized.split("(", 1)[0].strip()
+
+    return normalized
 def update_memory(
     memory: list[MemoryEntry],
     rejection_log: RejectionLog,
 ) -> list[MemoryEntry]:
     """
-    Learn reusable rules from a rejected lesson.
+    Learn reusable rules from a rejected lesson
+    and persist them for future runs.
     """
 
     updated_memory = list(memory)
@@ -61,7 +67,7 @@ def update_memory(
     for failure in rejection_log.failures:
         failure_type, _, reason = failure.partition(":")
 
-        failure_type = failure_type.strip()
+        failure_type = normalize_failure_type(failure_type)
         reason = reason.strip()
 
         learned_rule = build_learned_rule(
@@ -81,6 +87,7 @@ def update_memory(
 
         if existing:
             existing.frequency += 1
+            existing.reason = reason
         else:
             updated_memory.append(
                 MemoryEntry(
@@ -94,11 +101,18 @@ def update_memory(
     save_memory(updated_memory)
 
     return updated_memory
+
+
 def build_learned_rule(
     failure_type: str,
     reason: str,
 ) -> str:
-    """Convert evaluator feedback into a reusable rule."""
+    """
+    Convert evaluator feedback into a reusable rule.
+
+    The goal is to generalize a failure instead of simply
+    memorizing the exact wording of one rejected lesson.
+    """
 
     normalized = failure_type.lower().strip()
 
