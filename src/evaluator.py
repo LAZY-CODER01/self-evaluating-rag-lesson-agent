@@ -126,7 +126,6 @@ def run_deterministic_checks(lesson: Lesson) -> list[str]:
 
     return failures
 
-
 def evaluate_lesson(lesson: Lesson) -> EvaluationResult:
     """Evaluate a lesson using deterministic checks and an LLM judge."""
 
@@ -148,8 +147,6 @@ def evaluate_lesson(lesson: Lesson) -> EvaluationResult:
     )
 
     if deterministic_failures:
-        result.overall_pass = False
-
         result.checks.append(
             EvaluationCheck(
                 name="deterministic_structure",
@@ -157,5 +154,12 @@ def evaluate_lesson(lesson: Lesson) -> EvaluationResult:
                 reason="; ".join(deterministic_failures),
             )
         )
+
+    # The workflow decision is derived from the individual checks.
+    # This prevents an inconsistent LLM-generated overall_pass value.
+    result.overall_pass = all(
+        check.status == "PASS"
+        for check in result.checks
+    )
 
     return result

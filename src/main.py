@@ -1,39 +1,50 @@
-from src.config import DEFAULT_LEARNER_PROFILE
-from src.generator import generate_lesson
+from src.config import DEFAULT_LEARNER_PROFILE, MAX_RETRIES
+from src.workflow import build_workflow
 
 
 def main():
     topic = "Introduction to RAG"
 
-    print(f"\nGenerating lesson for: {topic}\n")
+    workflow = build_workflow()
 
-    lesson = generate_lesson(
-        topic=topic,
-        learner_profile=DEFAULT_LEARNER_PROFILE,
-    )
+    initial_state = {
+        "topic": topic,
+        "learner_profile": DEFAULT_LEARNER_PROFILE,
+        "attempt": 0,
+        "max_retries": MAX_RETRIES,
+        "previous_feedback": "",
+        "rejection_logs": [],
+        "memory": [],
+    }
 
+    final_state = workflow.invoke(initial_state)
+
+    print("\n" + "=" * 60)
+    print("FINAL RESULT")
     print("=" * 60)
-    print(lesson.title)
-    print("=" * 60)
 
-    print("\nIntroduction:")
-    print(lesson.introduction)
+    lesson = final_state["lesson"]
+    evaluation = final_state["evaluation"]
 
-    print("\nSections:")
+    print(f"\nTitle: {lesson.title}")
+    print(f"\nOverall evaluation: {evaluation.overall_pass}")
+    print(f"Attempts: {final_state['attempt']}")
 
-    for section in lesson.sections:
-        print(f"\n### {section.title}")
-        print(section.content)
+    print("\nEvaluation checks:")
 
-    print("\nExamples:")
+    for check in evaluation.checks:
+        print(
+            f"- {check.name}: "
+            f"{check.status} — {check.reason}"
+        )
 
-    for example in lesson.examples:
-        print(f"- {example}")
+    print("\nRejection logs:")
 
-    print("\nKey Takeaways:")
+    for log in final_state["rejection_logs"]:
+        print(f"\nAttempt {log.attempt}")
 
-    for takeaway in lesson.key_takeaways:
-        print(f"- {takeaway}")
+        for failure in log.failures:
+            print(f"- {failure}")
 
 
 if __name__ == "__main__":
