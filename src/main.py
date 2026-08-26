@@ -1,4 +1,4 @@
-from src.config import DEFAULT_LEARNER_PROFILE, MAX_RETRIES
+from src.config import DEFAULT_LEARNER_PROFILE, DEMO_MODE, MAX_RETRIES, MODEL_NAME
 from src.memory import load_memory
 from src.workflow import build_workflow
 from src.output import save_final_outputs
@@ -7,7 +7,22 @@ from src.output import save_final_outputs
 def main():
     topic = "Introduction to RAG"
 
+    print("=" * 60)
+    print("Self-Evaluating RAG Lesson Agent")
+    print("=" * 60)
+    print(f"Topic      : {topic}")
+    print(f"Model      : {MODEL_NAME}")
+    print(f"Max retries: {MAX_RETRIES}")
+    print(f"Demo mode  : {'ON' if DEMO_MODE else 'OFF'}")
+    print("=" * 60)
+
     workflow = build_workflow()
+
+    memory = load_memory()
+    if memory:
+        print(f"Memory     : {len(memory)} rule(s) loaded from previous runs")
+    else:
+        print("Memory     : empty (first run)")
 
     initial_state = {
         "topic": topic,
@@ -16,7 +31,7 @@ def main():
         "max_retries": MAX_RETRIES,
         "previous_feedback": "",
         "rejection_logs": [],
-        "memory": load_memory(),
+        "memory": memory,
     }
 
     final_state = workflow.invoke(initial_state)

@@ -10,6 +10,7 @@ def generate_node(state: AgentState) -> AgentState:
     """Generate or regenerate the lesson."""
 
     attempt = state.get("attempt", 0) + 1
+    print(f"\n[Attempt {attempt}] Generating lesson...", flush=True)
 
     lesson = generate_lesson(
         topic=state["topic"],
@@ -18,6 +19,8 @@ def generate_node(state: AgentState) -> AgentState:
         previous_feedback=state.get("previous_feedback", ""),
         attempt=attempt,
     )
+
+    print(f"[Attempt {attempt}] Lesson generated: {lesson.title!r}", flush=True)
 
     return {
         **state,
@@ -32,8 +35,15 @@ def evaluate_node(state: AgentState) -> AgentState:
     lesson = state.get("lesson")
     if not lesson:
         raise ValueError("Lesson is missing in state.")
-    
+
+    attempt = state.get("attempt", 0)
+    print(f"[Attempt {attempt}] Evaluating lesson against rubric...", flush=True)
+
     evaluation = evaluate_lesson(lesson)
+
+    status = "PASSED ✓" if evaluation.overall_pass else "FAILED ✗"
+    print(f"[Attempt {attempt}] Evaluation result: {status}", flush=True)
+
     return {
         **state,
         "evaluation": evaluation,
@@ -59,6 +69,11 @@ def retry_node(state: AgentState) -> AgentState:
     """Prepare evaluator feedback and update persistent memory."""
 
     evaluation = state["evaluation"]
+    attempt = state.get("attempt", 0)
+
+    failed = [c for c in evaluation.checks if c.status == "FAIL"]
+    print(f"[Attempt {attempt}] Rejected. Failed checks: {[c.name for c in failed]}", flush=True)
+    print(f"[Attempt {attempt}] Updating memory and preparing retry feedback...", flush=True)
 
     rejection_log = create_rejection_log(state)
 
